@@ -4,6 +4,7 @@ import Recipients from '../models/Recipients';
 
 class RecipientsController {
   async store(req, res) {
+    // Esquema de validação de inputs
     const schema = Yup.object().shape({
       name: Yup.string().required(),
       street: Yup.string().required(),
@@ -14,6 +15,7 @@ class RecipientsController {
       complement: Yup.string(),
     });
 
+    // Verifica se esquema passou na validação
     if (!(await schema.isValid(req.body))) {
       return res.status(400).json({ error: 'Validations fail' });
     }
@@ -28,10 +30,12 @@ class RecipientsController {
 
     let recipient = await Recipients.findByPk(id);
 
+    // Verifica se o destinatário existe
     if (!recipient) {
       return res.status(401).json({ error: 'Recipient not found' });
     }
 
+    // Esquema de validação de inputs
     const schema = Yup.object().shape({
       name: Yup.string(),
       street: Yup.string(),
@@ -42,6 +46,7 @@ class RecipientsController {
       complement: Yup.string(),
     });
 
+    // Verifica se esquema passou na validação
     if (!(await schema.isValid(req.body))) {
       return res.status(400).json({ error: 'Validations fails' });
     }

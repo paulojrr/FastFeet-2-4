@@ -1,12 +1,13 @@
 import Sequelize from 'sequelize';
 
-import User from '../app/models/Users';
+import Users from '../app/models/Users';
 import Recipients from '../app/models/Recipients';
+import Files from '../app/models/Files';
 import Deliverymans from '../app/models/Deliverymans';
 
 import databaseConfig from '../config/database';
 
-const models = [User, Recipients, Deliverymans];
+const models = [Users, Recipients, Files, Deliverymans];
 
 class Database {
   constructor() {
@@ -16,7 +17,13 @@ class Database {
   init() {
     this.connection = new Sequelize(databaseConfig);
 
-    models.map((model) => model.init(this.connection));
+    // Inicia os models
+    models.forEach((model) => model.init(this.connection));
+
+    // Caso o model tenha uma associação, ela é executada
+    models.forEach((model) => {
+      if (model.associate) model.associate(this.connection.models);
+    });
   }
 }
 
