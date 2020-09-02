@@ -10,7 +10,12 @@ class DeliverymanController {
       email: Yup.string().required(),
     });
 
-    const { email } = req.body;
+    // Verifica se inputs passaram na validação do esquema
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Validations fail' });
+    }
+
+    const { email, avatar_id } = req.body;
 
     const isEmail = await Deliverymans.findOne({ where: { email } });
 
@@ -19,24 +24,37 @@ class DeliverymanController {
       res.status(401).json({ error: 'Email already used' });
     }
 
-    // Verifica se inputs passaram na validação do esquema
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validations fail' });
+    // Verifica se o avatar_id existe
+    if (avatar_id) {
+      const isAvatar = await Deliverymans.findOne({ where: { avatar_id } });
+
+      if (isAvatar) {
+        return res.status(401).json({ error: 'Avatar alredy used' });
+      }
     }
 
-    const deliverymans = await Deliverymans.create(req.body);
+    await Deliverymans.create(req.body);
 
-    return res.json({ deliverymans });
+    return res.json({ email, avatar_id });
   }
 
   async index(req, res) {
-    const deliverymans = await Deliverymans.findAll();
+    const { page = 1 } = req.query;
 
-    return res.json({ deliverymans });
+    const deliverymans = await Deliverymans.findAll({
+      attributes: ['id', 'name', 'email', 'avatar_id'],
+      order: ['id'],
+      limit: 20,
+      offset: (page - 1) * 20,
+    });
+
+    return res.json(deliverymans);
   }
 
   async update(req, res) {
     const { id } = req.params;
+
+    const { name, email, avatar_id } = req.body;
 
     let deliverymans = await Deliverymans.findByPk(id);
 
@@ -58,19 +76,26 @@ class DeliverymanController {
     }
 
     // Caso exista um input de email, verificar se o email já existe
-    if (req.body.email) {
-      const { email } = req.body;
-
+    if (email) {
       const isEmail = await Deliverymans.findOne({ where: { email } });
 
       if (isEmail) {
-        res.status(401).json({ error: 'Email already used' });
+        return res.status(401).json({ error: 'Email already used' });
+      }
+    }
+
+    // Verifica se o avatar_id já existe
+    if (avatar_id) {
+      const isAvatar = await Deliverymans.findOne({ where: { avatar_id } });
+
+      if (isAvatar) {
+        return res.status(401).json({ error: 'Avatar alredy used' });
       }
     }
 
     deliverymans = await deliverymans.update(req.body);
 
-    return res.status(200).json({ deliverymans });
+    return res.status(200).json({ name, email, avatar_id });
   }
 
   async delete(req, res) {
@@ -85,7 +110,7 @@ class DeliverymanController {
 
     await Deliverymans.destroy({ where: { id } });
 
-    return res.status(200).json({ deliverymans });
+    return res.status(200).json();
   }
 }
 

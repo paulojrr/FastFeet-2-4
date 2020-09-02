@@ -20,6 +20,7 @@ routes.post('/session', SessionController.store);
 // UserDeliveryman controller
 routes.get('/deliveryman/:id/deliveries', UserDeliveryman.index);
 routes.get('/deliveryman/:id/delivered', UserDeliveryman.delivered);
+routes.put('/deliveryman/:deliveryman_id/deliveries', UserDeliveryman.update);
 
 // Rota de autenticação
 routes.use(auth);

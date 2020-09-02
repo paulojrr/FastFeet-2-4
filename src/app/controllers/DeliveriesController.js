@@ -49,7 +49,13 @@ Equipe FastFeet.`,
   }
 
   async index(req, res) {
-    const deliveries = await Deliveries.findAll();
+    const { page = 1 } = req.query;
+
+    const deliveries = await Deliveries.findAll({
+      order: ['createdAt'],
+      limit: 20,
+      offset: (page - 1) * 20,
+    });
 
     res.status(200).json({ deliveries });
   }
