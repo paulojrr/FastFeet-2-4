@@ -1,13 +1,14 @@
 import Sequelize from 'sequelize';
 import {
   parseISO,
-  setSeconds,
-  setMinutes,
   setHours,
+  setMinutes,
+  setSeconds,
   isBefore,
   isAfter,
   startOfDay,
   endOfDay,
+  format,
 } from 'date-fns';
 import * as Yup from 'yup';
 
@@ -151,43 +152,49 @@ class UserDeliverymanController {
         .json({ error: 'Delivery does not belong to deliveryman' });
     }
 
-    // Data da coleta
-    const startDate = parseISO(req.body.start_date);
+    // Verifica se coleta está dentro do horário permitido
+    if (req.body.start_date) {
+      const start_time = parseISO(req.body.start_date).getHours();
 
-    // Data da entrega
-    const endDate = parseISO(req.body.end_date);
+      if (start_time < 8 || start_time > 18) {
+        return res.status(400).json({
+          erro: 'The access is only permited between 08:00 and 18:00',
+        });
+      }
 
-    // Inicio do horário de trabalho
-    const startWork = setSeconds(setMinutes(setHours(startDate, 8), 0), 0);
+      const start_date = parseISO(req.body.start_date);
 
-    // Fim do horário de trabalho
-    const endWork = setSeconds(setMinutes(setHours(endDate, 18), 0), 0);
-
-    // Verifica se a coleta está dentro do horário permitido
-    if (isBefore(startDate, startWork) || isAfter(endDate, endWork)) {
-      return res
-        .status(400)
-        .json({ erro: 'The access is only permited between 08:00 and 18:00' });
+      if (isBefore(start_date, new Date())) {
+        return res.status(400).json({ error: 'Past dates are not permited ' });
+      }
     }
 
-    // Verifica se a data de coleta é válida
-    if (isBefore(startDate, new Date())) {
-      return res.status(400).json({ error: 'Past dates are not permited ' });
-    }
+    // Verifica se entrega está dentro do horário permitido
+    if (req.body.end_date) {
+      const end_time = parseISO(req.body.end_date).getHours();
 
-    // Verifica se a data de entrega é válida
-    if (isBefore(endDate, startDate)) {
-      return res.status(400).json({
-        error: 'Conclusion date must be after start date',
-      });
+      if (end_time < 8 || end_time > 18) {
+        return res.status(400).json({
+          erro: 'The access is only permited between 08:00 and 18:00',
+        });
+      }
+
+      const end_date = parseISO(req.body.end_date);
+
+      if (isBefore(end_date, existsDelivery.start_date)) {
+        return res.status(400).json({ error: 'Past dates are not permited ' });
+      }
     }
 
     // Verifica se entregador já realizou 5 coletas no mesmo dia
+
+    const today = new Date();
+
     const deliveriesDay = await Deliveries.findAll({
       where: {
-        id,
+        deliveryman_id,
         start_date: {
-          [Op.between]: [startOfDay(startDate), endOfDay(startDate)],
+          [Op.between]: [startOfDay(today), endOfDay(today)],
         },
       },
     });
