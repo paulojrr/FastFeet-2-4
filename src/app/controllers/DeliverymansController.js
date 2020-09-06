@@ -41,6 +41,7 @@ class DeliverymanController {
   async index(req, res) {
     const { page = 1 } = req.query;
 
+    // Lista todos os entregadores
     const deliverymans = await Deliverymans.findAll({
       attributes: ['id', 'name', 'email', 'avatar_id'],
       order: ['id'],

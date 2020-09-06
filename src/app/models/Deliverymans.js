@@ -13,6 +13,7 @@ class Deliveryman extends Model {
     return this;
   }
 
+  // Cria associações com outros models
   static associate(models) {
     this.belongsTo(models.File, {
       targetKey: 'id',

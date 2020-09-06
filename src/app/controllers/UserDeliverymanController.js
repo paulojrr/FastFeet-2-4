@@ -1,15 +1,5 @@
 import Sequelize from 'sequelize';
-import {
-  parseISO,
-  setHours,
-  setMinutes,
-  setSeconds,
-  isBefore,
-  isAfter,
-  startOfDay,
-  endOfDay,
-  format,
-} from 'date-fns';
+import { parseISO, isBefore, startOfDay, endOfDay } from 'date-fns';
 import * as Yup from 'yup';
 
 import Deliveries from '../models/Deliveries';
@@ -31,8 +21,10 @@ class UserDeliverymanController {
 
     const { page = 1 } = req.query;
 
+    // Busca encomendas atribuidas ao entregador
     const deliveries = await Deliveries.findAll({
       where: {
+        deliveryman_id: id,
         end_date: null,
         canceled_at: null,
       },
@@ -187,7 +179,6 @@ class UserDeliverymanController {
     }
 
     // Verifica se entregador já realizou 5 coletas no mesmo dia
-
     const today = new Date();
 
     const deliveriesDay = await Deliveries.findAll({

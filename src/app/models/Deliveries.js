@@ -16,6 +16,7 @@ class Delivery extends Model {
     );
   }
 
+  // Cria associações com outros models
   static associate(models) {
     this.belongsTo(models.Recipient, {
       foreignKey: 'recipient_id',

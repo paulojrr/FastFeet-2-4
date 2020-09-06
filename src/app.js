@@ -11,6 +11,7 @@ class App {
     this.routes();
   }
 
+  // Habilita requisições em json
   middlewares() {
     this.server.use(express.json());
   }

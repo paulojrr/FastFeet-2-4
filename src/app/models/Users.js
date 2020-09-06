@@ -18,6 +18,7 @@ class User extends Model {
     return this;
   }
 
+  // Verifica se senha está correta
   checkpassword(password) {
     return bcrypt.compare(password, this.password_hash);
   }

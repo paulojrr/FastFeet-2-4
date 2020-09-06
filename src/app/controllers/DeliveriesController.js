@@ -3,7 +3,8 @@ import Deliveries from '../models/Deliveries';
 import Recipients from '../models/Recipients';
 import Deliverymans from '../models/Deliverymans';
 
-import Mail from '../../lib/Mail';
+import NewDeliveryMail from '../jobs/NewDeliveryMail';
+import Queue from '../../lib/Queue';
 
 class DeliverysController {
   async store(req, res) {
@@ -19,7 +20,7 @@ class DeliverysController {
       return res.status(400).json({ error: 'Validations fail' });
     }
 
-    const { recipient_id, deliveryman_id, product } = req.body;
+    const { recipient_id, deliveryman_id } = req.body;
 
     const existsRecipient = await Recipients.findByPk(recipient_id);
 
@@ -37,20 +38,22 @@ class DeliverysController {
 
     const deliveries = await Deliveries.create(req.body);
 
-    await Mail.sendMail({
-      to: `${existsDeliveryman.name} <${existsDeliveryman.email}>`,
-      subject: 'Nova encomenda cadastrada',
-      text: `O produto ${product} está disponível para retirada. \n
-A retira só pode ser feita entre às 08:00 e 18:00h.\n
-att,\n
-Equipe FastFeet.`,
+    // Adiciona job de envio de email de cancelamento na fila,
+    // passando dados para o envio do email
+    await Queue.add(NewDeliveryMail.key, {
+      existsDeliveryman,
+      existsRecipient,
+      deliveries,
+      date: new Date(),
     });
+
     return res.status(200).json({ deliveries });
   }
 
   async index(req, res) {
     const { page = 1 } = req.query;
 
+    // Lista entregas
     const deliveries = await Deliveries.findAll({
       order: ['createdAt'],
       limit: 20,

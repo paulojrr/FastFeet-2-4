@@ -8,6 +8,7 @@ import DeliverymansController from './app/controllers/DeliverymansController';
 import FileController from './app/controllers/FileController';
 import DeliveriesController from './app/controllers/DeliveriesController';
 import UserDeliveryman from './app/controllers/UserDeliverymanController';
+import DeliveryProblemsController from './app/controllers/DeliveryProblemsController';
 
 import auth from './app/middlewares/auth';
 
@@ -21,6 +22,15 @@ routes.post('/session', SessionController.store);
 routes.get('/deliveryman/:id/deliveries', UserDeliveryman.index);
 routes.get('/deliveryman/:id/delivered', UserDeliveryman.delivered);
 routes.put('/deliveryman/:deliveryman_id/deliveries', UserDeliveryman.update);
+
+// DeliveryProblems Controller
+routes.get('/delivery/problems', DeliveryProblemsController.index);
+routes.get('/delivery/:delivery_id/problems', DeliveryProblemsController.list);
+routes.post(
+  '/delivery/:delivery_id/problems',
+  DeliveryProblemsController.store
+);
+routes.put('/delivery/:id/problems', DeliveryProblemsController.cancel);
 
 // Rota de autenticação
 routes.use(auth);
