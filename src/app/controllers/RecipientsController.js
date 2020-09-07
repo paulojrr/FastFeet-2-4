@@ -20,9 +20,9 @@ class RecipientsController {
       return res.status(400).json({ error: 'Validations fail' });
     }
 
-    const recipient = await Recipients.create(req.body);
+    await Recipients.create(req.body);
 
-    return res.json({ recipient });
+    return res.json(req.body);
   }
 
   async update(req, res) {
@@ -53,7 +53,7 @@ class RecipientsController {
 
     recipient = await recipient.update(req.body);
 
-    return res.json({ recipient });
+    return res.json(req.body);
   }
 }
 

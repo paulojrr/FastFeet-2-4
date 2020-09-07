@@ -70,7 +70,7 @@ class DeliveryProblemsController {
       description,
     });
 
-    return res.status(200).json(problems);
+    return res.status(200).json({ id: problems.id, delivery_id, description });
   }
 
   async list(req, res) {
@@ -122,6 +122,14 @@ class DeliveryProblemsController {
     // Busca a encomenda
     let delivery = await Deliveries.findOne({
       where: { id: delivery_id },
+      attributes: [
+        'id',
+        'recipient_id',
+        'deliveryman_id',
+        'product',
+        'canceled_at',
+        'start_date',
+      ],
       // Incremente os dados do destinatário na listagem
       include: [
         {

@@ -20,7 +20,7 @@ class DeliverysController {
       return res.status(400).json({ error: 'Validations fail' });
     }
 
-    const { recipient_id, deliveryman_id } = req.body;
+    const { recipient_id, deliveryman_id, product } = req.body;
 
     const existsRecipient = await Recipients.findByPk(recipient_id);
 
@@ -37,6 +37,7 @@ class DeliverysController {
     }
 
     const deliveries = await Deliveries.create(req.body);
+    const { id } = deliveries;
 
     // Adiciona job de envio de email de cancelamento na fila,
     // passando dados para o envio do email
@@ -47,7 +48,7 @@ class DeliverysController {
       date: new Date(),
     });
 
-    return res.status(200).json({ deliveries });
+    return res.status(200).json({ id, deliveryman_id, recipient_id, product });
   }
 
   async index(req, res) {
@@ -55,7 +56,28 @@ class DeliverysController {
 
     // Lista entregas
     const deliveries = await Deliveries.findAll({
-      order: ['createdAt'],
+      order: ['id'],
+      include: [
+        {
+          model: Recipients,
+          as: 'recipient',
+          attributes: [
+            'id',
+            'name',
+            'state',
+            'city',
+            'street',
+            'number',
+            'complement',
+            'cep',
+          ],
+        },
+        {
+          model: Deliverymans,
+          as: 'deliveryman',
+          attributes: ['id', 'name', 'email'],
+        },
+      ],
       limit: 20,
       offset: (page - 1) * 20,
     });
@@ -87,7 +109,7 @@ class DeliverysController {
 
     existsDelivery = await existsDelivery.update(req.body);
 
-    return res.json(existsDelivery);
+    return res.json(req.body);
   }
 
   async delete(req, res) {
@@ -102,7 +124,7 @@ class DeliverysController {
 
     await existsDelivery.destroy();
 
-    return res.status(200).json(existsDelivery);
+    return res.status(200).json();
   }
 }
 
